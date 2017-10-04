@@ -11,25 +11,45 @@ $(function(){
 });
 
 
-function makeTubeList(tubes) {
-  $.each(tubes, function(index, value) {
-    const title = tubes[index].snippet.title,
-      thumb = tubes[index].snippet.thumbnails.high.url,
-      url = 'https://www.youtube.com/watch?v='+tubes[index].id.videoId,
-      html = '';
+function makeTubeList(results) {
+  let html = '';
+  $.each(results, function(index, result) {
 
-    //Append html into body in Div with the class '.row'
-    const element = $(`<div class="tubebox col-xs-12 col-md-4 col-lg-3">\
-						<a href="${url}" class="thumbnail">\
-							<img src="${thumb}"/>\
-							<div class="caption">\
-								<h3 class="tube-title">${title}</h3>\
-							</div>\
-						</a>\
-          </div>`);
-          
-    $('.results-area>.row').append(element);
+    let title = result.snippet.title,
+      defaultThumb = result.snippet.thumbnails.default,
+      thumbURL = '',
+      url = 'https://www.youtube.com/watch?v='+result.id.videoId;
+      
+      
+    //if (thumbnail object has no width or height properties) {
+      // do something
+    //}
+
+    if (!defaultThumb.hasOwnProperty('height')){
+      thumbURL = 'http://fillmurray.com/200/200';
+    } else {
+      thumbURL = defaultThumb.url;
+    }
+
+    // if no thumbnail, replace with http://fillmurray.com/200/200
+
+    //Replace html into body in Div with the class '.row'
+    html = html + (
+      `<div class="tubebox col-xs-12 col-md-4 col-lg-3">
+						<a href="${url}" class="thumbnail">
+            <img src="${thumbURL}"/>
+							<div class="caption">
+								<h3 class="tube-title">${title}</h3>
+							</div>
+						</a>
+          </div>`
+    ); 
+
   });
+  return html;  
+}
+function renderList(html) {
+  $('.results-area>.row').html(html);
 }
 
 
@@ -45,6 +65,7 @@ function getRequest(searchTerm) {
   //Get JSON request
   $.getJSON(endpoint, params, function(data){
     const tubes = data.items;
-    makeTubeList(tubes);
+    const listHTML = makeTubeList(tubes);
+    renderList(listHTML);
   });
 }
